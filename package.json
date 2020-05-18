@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/MiranMustafa/sisteme-te-shperndara/issues"
   },
-  "homepage": "https://github.com/MiranMustafa/sisteme-te-shperndara#readme"
+  "homepage": "https://github.com/MiranMustafa/sisteme-te-shperndara#readme",
+  "dependencies": {
+    "webpack": "^4.43.0"
+  }
 }

@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/MiranMustafa/sisteme-te-shperndara#readme",
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "express": "^4.17.1",
     "pg": "^8.2.1",
     "webpack": "^4.43.0"
   }

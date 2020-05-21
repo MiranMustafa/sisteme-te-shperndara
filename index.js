@@ -10,6 +10,13 @@ server.listen(PORT, function(){
     console.log('Listening');
 });
 
+app.get('', async (req,res)=>{
+  res.send({
+    'status' : 'OK'
+  }
+  )
+})
+
 
 // pools will use environment variables
 // for connection information

@@ -168,10 +168,10 @@ const pool = new Pool({
 });
 
 //use for local db
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'mylocaldb',
-  password: 'admin',
-  port: 5432,
-});
+// const pool = new Pool({
+//   user: 'postgres',
+//   host: 'localhost',
+//   database: 'mylocaldb',
+//   password: 'admin',
+//   port: 5432,
+// });

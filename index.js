@@ -28,11 +28,11 @@ server.listen(PORT, function () {
   console.log('Listening');
 });
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   socket.on('new-user', username => {
     connections[socket.id] = username;
   });
-  socket.on('send-message-chat', data => {
+  socket.on('send-message-chat',async  data => {
     data.userid;
     data.chatid;
     data.message;
@@ -493,6 +493,7 @@ app.get(`${extension}/getMessagesByChatId`, async (req, res) => {
       message: 'failed'
     })
   }
+
 });
 
 app.get(`${extension}/getUserInfoById`, async (req, res) => {

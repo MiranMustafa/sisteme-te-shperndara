@@ -503,7 +503,7 @@ app.get(`${extension}/getUserInfoById`, async (req, res) => {
    */
 });
 
-use for hosted db
+//use for hosted db
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {

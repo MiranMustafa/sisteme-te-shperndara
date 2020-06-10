@@ -520,18 +520,18 @@ app.get(`${extension}/getUserInfoById`, async (req, res) => {
 });
 
 //use for hosted db
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false
-//   }
-// });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 //use for local db
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'mylocaldb',
-  password: 'admin',
-  port: 5432,
-});
+// const pool = new Pool({
+//   user: 'postgres',
+//   host: 'localhost',
+//   database: 'mylocaldb',
+//   password: 'admin',
+//   port: 5432,
+// });

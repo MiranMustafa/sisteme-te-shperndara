@@ -37,6 +37,7 @@ io.on('connection', async (socket) => {
     data.chatid;
     data.message;
     data.timestamp;
+    const client = await pool.connect();
 
     const result = await client.query('SELECT * FROM chat where user_id_1 = $1 OR user_id_2  = $1 AND id = $2', [data.userid, data.chatid])[0];
     let receiverId;
@@ -49,6 +50,8 @@ io.on('connection', async (socket) => {
     }
 
     const username = await client.query('SELECT username from users where id = $1', [receiverId])[0].username;
+
+    client.release();
 
     receiverSocketId = getKeyByValue(username);
 
@@ -120,6 +123,7 @@ app.post(`${extension}/newAddress`, async (req, res) => {
 
   try {
     result = await client.query(text, values)
+    client.release();
     return res.status(200).send({
       success: true,
       message: 'added'
@@ -175,6 +179,7 @@ app.post(`${extension}/newStreet`, async (req, res) => {
 
   try {
     result = await client.query(text, values)
+    client.release();
     return res.status(200).send({
       success: true,
       message: 'added'
@@ -211,6 +216,7 @@ app.post(`${extension}/newMunicipality`, async (req, res) => {
 
   try {
     result = await client.query(text, values)
+    client.release();
     return res.status(200).send({
       success: true,
       message: 'added'
@@ -253,6 +259,7 @@ app.post(`${extension}/newObject`, async (req, res) => {
 
   try {
     result = await client.query(text, values)
+    client.release();
     return res.status(200).send({
       success: true,
       message: 'added'
@@ -283,6 +290,7 @@ app.post(`${extension}/newRegion`, async (req, res) => {
 
   try {
     result = await client.query(text, values)
+    client.release();
     return res.status(200).send({
       success: true,
       message: 'added'
@@ -314,6 +322,7 @@ app.post(`${extension}/login`, async (req, res) => {
   }
   const client = await pool.connect();
   let result = await client.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, getHashedPassword(password)]);
+  client.release();
   if (result.rowCount == 0) {
     return res.status(404).send({
       success: false,
@@ -378,6 +387,7 @@ app.post(`${extension}/register`, async (req, res) => {
 
   const client = await pool.connect();
   let result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+  client.release();
 
   if (result.rowCount > 0) {
     return res.status(409).send({
@@ -386,7 +396,9 @@ app.post(`${extension}/register`, async (req, res) => {
     });
   }
 
+  client = await pool.connect();
   result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+  client.release();
 
   if (result.rowCount > 0) {
     return res.status(409).send({
@@ -399,7 +411,9 @@ app.post(`${extension}/register`, async (req, res) => {
   const values = [name, surname, getHashedPassword(password), username, email, role];
 
   try {
+    client = await pool.connect();
     result = await client.query(text, values)
+    client.release();
     console.log('aaaaa');
     return res.status(200).send({
       success: true,
@@ -425,6 +439,7 @@ app.get(`${extension}/getAdresses`, async (req, res) => {
     'FROM address INNER JOIN region on region.id = address.region_id ' +
     'INNER JOIN street on street.id = address.street_id INNER JOIN object on object.id = address.object_id ' +
     'INNER JOIN municipality on municipality.id = address.municipality_id ; ');
+    client.release();
 
   res.status(200).send(
     result.rows
@@ -450,6 +465,7 @@ app.post(`${extension}/getChatsByUserId`, async (req, res) => {
   try {
     const client = await pool.connect();
     let result = await client.query("SELECT * FROM chat where user_id_1 = $1 OR user_id_2 = $1", [userId]);
+    client.release();
     return res.status(200).send({
       success: true,
       chats: result
@@ -504,18 +520,18 @@ app.get(`${extension}/getUserInfoById`, async (req, res) => {
 });
 
 //use for hosted db
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false
+//   }
+// });
 
 //use for local db
-// const pool = new Pool({
-//   user: 'postgres',
-//   host: 'localhost',
-//   database: 'mylocaldb',
-//   password: 'admin',
-//   port: 5432,
-// });
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'mylocaldb',
+  password: 'admin',
+  port: 5432,
+});

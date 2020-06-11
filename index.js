@@ -32,7 +32,7 @@ io.on('connection', async (socket) => {
   socket.on('new-user', username => {
     connections[socket.id] = username;
   });
-  socket.on('send-message-chat',async  data => {
+  socket.on('send-message-chat', async data => {
     data.userid;
     data.chatid;
     data.message;
@@ -138,6 +138,79 @@ app.post(`${extension}/newAddress`, async (req, res) => {
 
 });
 
+app.post(`${extension}/updateAddress`, async (req, res) => {
+  console.log(req.body);
+  const { od, regiondId, municipalityId, neighborhood, streetId, objectId, latitude, longitude } = req.body;
+  if (!id) {
+    return res.status(400).send({
+      success: false,
+      message: 'id is required'
+    });
+  }
+  if (!regiondId) {
+    return res.status(400).send({
+      success: false,
+      message: 'regionId is required'
+    });
+  }
+  if (!municipalityId) {
+    return res.status(400).send({
+      success: false,
+      message: 'municipalityId is required'
+    });
+  }
+  if (!neighborhood) {
+    return res.status(400).send({
+      success: false,
+      message: 'neighborhood is required'
+    });
+  }
+  if (!streetId) {
+    return res.status(400).send({
+      success: false,
+      message: 'streetId is required'
+    });
+  }
+  if (!objectId) {
+    return res.status(400).send({
+      success: false,
+      message: 'objectId is required'
+    });
+  }
+  if (!latitude) {
+    return res.status(400).send({
+      success: false,
+      message: 'latitude is required'
+    });
+  }
+  if (!longitude) {
+    return res.status(400).send({
+      success: false,
+      message: 'longitude is required'
+    });
+  }
+
+  const text = 'UPDATE public.address region_id=$2, municipality_id=$3, neighborhood=$4, street_id=$5, object_id=$6, latitude=$7, longitude=$8	WHERE id = $1;'
+  const values = [id, regiondId, municipalityId, neighborhood, streetId, objectId, latitude, longitude];
+  const client = await pool.connect();
+
+  try {
+    result = await client.query(text, values)
+    client.release();
+    return res.status(200).send({
+      success: true,
+      message: 'updated'
+    });
+  } catch (err) {
+    console.log(err.stack)
+    return res.status(500).send({
+      success: false,
+      message: 'failed'
+    })
+  }
+
+});
+
 app.post(`${extension}/newStreet`, async (req, res) => {
   console.log(req.body);
   const { municipalityId, country, code, name, type } = req.body;
@@ -194,24 +267,50 @@ app.post(`${extension}/newStreet`, async (req, res) => {
 
 });
 
-app.post(`${extension}/newMunicipality`, async (req, res) => {
+app.post(`${extension}/updateStreet`, async (req, res) => {
   console.log(req.body);
-  const { name, postalCode } = req.body;
+  const { id, municipalityId, country, code, name, type } = req.body;
+
+  if (!id) {
+    return res.status(400).send({
+      success: false,
+      message: 'id is required'
+    });
+  }
+
+  if (!municipalityId) {
+    return res.status(400).send({
+      success: false,
+      message: 'municipalityId is required'
+    });
+  }
+  if (!country) {
+    return res.status(400).send({
+      success: false,
+      message: 'country is required'
+    });
+  }
+  if (!code) {
+    return res.status(400).send({
+      success: false,
+      message: 'code is required'
+    });
+  }
   if (!name) {
     return res.status(400).send({
       success: false,
       message: 'name is required'
     });
   }
-  if (!postalCode) {
+  if (!type) {
     return res.status(400).send({
       success: false,
-      message: 'postalCode is required'
+      message: 'type is required'
     });
   }
 
-  const text = 'INSERT INTO municipality(name, postal_code) VALUES ( $1, $2);'
-  const values = [name, postalCode];
+  const text = 'UPDATE public.street SET "municipalityId"=$2, country=$3, code=$4, name=$5, type=$6 WHERE id = $1;'
+  const values = [id, municipalityId, country, code, name, type];
   const client = await pool.connect();
 
   try {
@@ -274,18 +373,37 @@ app.post(`${extension}/newObject`, async (req, res) => {
 
 });
 
-app.post(`${extension}/newRegion`, async (req, res) => {
+app.post(`${extension}/newObject`, async (req, res) => {
   console.log(req.body);
-  const { name } = req.body;
-  if (!name) {
+  const { type, numberOfFloors, numberOfEntrances } = req.body;
+  if (!id) {
     return res.status(400).send({
       success: false,
-      message: 'name is required'
+      message: 'id is required'
+    });
+  }
+  if (!type) {
+    return res.status(400).send({
+      success: false,
+      message: 'type is required'
+    });
+  }
+  if (!numberOfFloors) {
+    return res.status(400).send({
+      success: false,
+      message: 'numberOfFloors is required'
+    });
+  }
+  if (!numberOfEntrances) {
+    return res.status(400).send({
+      success: false,
+      message: 'numberOfEntrances is required'
     });
   }
 
-  const text = 'INSERT INTO region(name) VALUES ($1);'
-  const values = [name];
+  const text = 'UPDATE public.object  type=$2, number_of_floors=$3, number_of_entrances=$4 WHERE id = $1;'
+  //const text = 'INSERT INTO address(type, number_of_floors, number_of_entrances) VALUES ( $1, $2, $3);'
+  const values = [id, type, numberOfFloors, numberOfEntrances];
   const client = await pool.connect();
 
   try {
@@ -307,21 +425,23 @@ app.post(`${extension}/newRegion`, async (req, res) => {
 
 app.post(`${extension}/login`, async (req, res) => {
   console.log(req.body);
-  const { email, password } = req.body;
-  if (!email) {
+  const emailRequest = JSON.parse(req.body);
+  //const emailRequest = new emailRequest(email, password);
+
+  if (!emailRequest.email) {
     return res.status(400).send({
       success: false,
       message: 'email is required'
     });
   }
-  if (!password) {
+  if (!emailRequest.password) {
     return res.status(400).send({
       success: false,
       message: 'password is required'
     });
   }
   const client = await pool.connect();
-  let result = await client.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, getHashedPassword(password)]);
+  let result = await client.query('SELECT * FROM users WHERE email = $1 AND password = $2', [emailRequest.email, getHashedPassword(emailRequest.password)]);
   client.release();
   if (result.rowCount == 0) {
     return res.status(404).send({
@@ -346,7 +466,7 @@ app.post(`${extension}/login`, async (req, res) => {
 
 
 app.post(`${extension}/register`, async (req, res) => {
-  const { email, password, name, surname, username, role } = req.body;
+  const { email, password, name, surname, username, role } = JSON.parse(req.body);
   if (!email) {
     return res.status(400).send({
       success: false,
@@ -439,8 +559,44 @@ app.get(`${extension}/getAdresses`, async (req, res) => {
     'FROM address INNER JOIN region on region.id = address.region_id ' +
     'INNER JOIN street on street.id = address.street_id INNER JOIN object on object.id = address.object_id ' +
     'INNER JOIN municipality on municipality.id = address.municipality_id ; ');
-    client.release();
+  client.release();
 
+  res.status(200).send(
+    result.rows
+  );
+});
+
+app.get(`${extension}/getMunicipalities`, async (req, res) => {
+  const client = await pool.connect();
+  let result = await client.query(" SELECT * from municipality");
+  client.release();
+  res.status(200).send(
+    result.rows
+  );
+});
+
+app.get(`${extension}/getRegions`, async (req, res) => {
+  const client = await pool.connect();
+  let result = await client.query(" SELECT * from region");
+  client.release();
+  res.status(200).send(
+    result.rows
+  );
+});
+
+app.get(`${extension}/getStreets`, async (req, res) => {
+  const client = await pool.connect();
+  let result = await client.query(" SELECT * from street");
+  client.release();
+  res.status(200).send(
+    result.rows
+  );
+});
+
+app.get(`${extension}/getObjects`, async (req, res) => {
+  const client = await pool.connect();
+  let result = await client.query(" SELECT * from object");
+  client.release();
   res.status(200).send(
     result.rows
   );
@@ -512,11 +668,38 @@ app.get(`${extension}/getMessagesByChatId`, async (req, res) => {
 
 });
 
-app.get(`${extension}/getUserInfoById`, async (req, res) => {
+app.post(`${extension}/getUserInfoById`, async (req, res) => {
+  const userid = req.body;
+
+  if (!userid) {
+    return res.status(400).send({
+      success: false,
+      message: 'userid is required'
+    });
+  }
+  const text = "SELECT id, username from users where id = $1";
+  const values = [userid];
+
+  try {
+    client = await pool.connect();
+    result = await client.query(text, values)
+    client.release();
+    return res.status(200).send({
+      success: true,
+      user: result[0]
+    });
+  } catch (err) {
+    console.log(err.stack)
+    return res.status(500).send({
+      success: false,
+      message: 'failed'
+    })
+  }
 
   /** userid
    *  query = "SELECT id, username from users where id = userid"
    */
+
 });
 
 //use for hosted db

@@ -425,23 +425,23 @@ app.post(`${extension}/newObject`, async (req, res) => {
 
 app.post(`${extension}/login`, async (req, res) => {
   console.log(req.body);
-  const emailRequest = JSON.parse(req.body);
+  const {email , password} = req.body;
   //const emailRequest = new emailRequest(email, password);
 
-  if (!emailRequest.email) {
+  if (!email) {
     return res.status(400).send({
       success: false,
       message: 'email is required'
     });
   }
-  if (!emailRequest.password) {
+  if (!password) {
     return res.status(400).send({
       success: false,
       message: 'password is required'
     });
   }
   const client = await pool.connect();
-  let result = await client.query('SELECT * FROM users WHERE email = $1 AND password = $2', [emailRequest.email, getHashedPassword(emailRequest.password)]);
+  let result = await client.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, getHashedPassword(password)]);
   client.release();
   if (result.rowCount == 0) {
     return res.status(404).send({

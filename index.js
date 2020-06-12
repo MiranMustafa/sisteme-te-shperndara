@@ -1,14 +1,11 @@
 const express = require('express');
-const { Pool, Client } = require('pg')
+const { Pool } = require('pg');
 const http = require('http');
 const bodyParser = require('body-parser');
 const io = require('socket.io')(http)
 const extension = '/api/v1';
-const connections = {}; // pairs of socket.id with username
-
 
 const crypto = require('crypto');
-
 
 const getHashedPassword = (password) => {
   const sha256 = crypto.createHash('sha256');
@@ -426,7 +423,6 @@ app.post(`${extension}/newObject`, async (req, res) => {
 app.post(`${extension}/login`, async (req, res) => {
   console.log(req.body);
   const {email , password} = req.body;
-  //const emailRequest = new emailRequest(email, password);
 
   if (!email) {
     return res.status(400).send({
@@ -695,10 +691,6 @@ app.post(`${extension}/getUserInfoById`, async (req, res) => {
       message: 'failed'
     })
   }
-
-  /** userid
-   *  query = "SELECT id, username from users where id = userid"
-   */
 
 });
 
